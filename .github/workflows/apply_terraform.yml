@@ -41,23 +41,28 @@ jobs:
           USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
           echo "Updating variables file in $USER_FOLDER/variables.tf"
           
+          # Проверка содержимого перед заменой
+          echo "Current contents of variables.tf before updates:"
+          cat "$USER_FOLDER/variables.tf"
+
           # Обновляем region
-          if sed -i "s/variable \\"region\\" {.*/variable \\"region\\" { default = \\"${{ github.event.inputs.region }}\\" }/" "$USER_FOLDER/variables.tf"; then
+          if sed -i "s/default = \\".*\\"/default = \\"${{ github.event.inputs.region }}\\"/" "$USER_FOLDER/variables.tf"; then
             echo "Updated region successfully."
           else
             echo "Failed to update region."
           fi
 
           # Обновляем bucket_name
-          if sed -i "s/variable \\"bucket_name\\" {.*/variable \\"bucket_name\\" { default = \\"${{ github.event.inputs.bucket_name }}\\" }/" "$USER_FOLDER/variables.tf"; then
+          if sed -i "s/default = \\".*\\"/default = \\"${{ github.event.inputs.bucket_name }}\\"/" "$USER_FOLDER/variables.tf"; then
             echo "Updated bucket_name successfully."
           else
             echo "Failed to update bucket_name."
           fi
           
-          # Проверка изменений
-          echo "Updated contents of variables.tf:"
+          # Проверка изменений после замены
+          echo "Updated contents of variables.tf after updates:"
           cat "$USER_FOLDER/variables.tf"
+
 
       - name: Commit changes
         run: |
