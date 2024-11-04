@@ -26,30 +26,43 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3  # обновленная версия checkout action
+        uses: actions/checkout@v3
 
       - name: Create unique folder for this run
         run: |
           export USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
           mkdir -p "$USER_FOLDER"
           cp ./tf/main.tf "$USER_FOLDER"
-          ls -al "$USER_FOLDER"  # проверка содержимого папки для отладки
-        env:
-          USER_FOLDER: ./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}
+          cp ./tf/variables.tf "$USER_FOLDER"  # Копируем файл переменных
+          ls -al "$USER_FOLDER"  # Проверка содержимого папки для отладки
 
-      - name: Update Terraform file with specified parameters
+      - name: Update Terraform variables file
         run: |
-          sed -i "s/variable \\"region\\" {.*/variable \\"region\\" { default = \\"${{ github.event.inputs.region }}\\" }/" "$USER_FOLDER/main.tf"
-          sed -i "s/variable \\"bucket_name\\" {.*/variable \\"bucket_name\\" { default = \\"${{ github.event.inputs.bucket_name }}\\" }/" "$USER_FOLDER/main.tf"
-        env:
-          USER_FOLDER: ./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}
+          USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
+          echo "Updating variables file in $USER_FOLDER/variables.tf"
+          
+          # Обновляем region
+          if sed -i "s/variable \\"region\\" {.*/variable \\"region\\" { default = \\"${{ github.event.inputs.region }}\\" }/" "$USER_FOLDER/variables.tf"; then
+            echo "Updated region successfully."
+          else
+            echo "Failed to update region."
+          fi
+
+          # Обновляем bucket_name
+          if sed -i "s/variable \\"bucket_name\\" {.*/variable \\"bucket_name\\" { default = \\"${{ github.event.inputs.bucket_name }}\\" }/" "$USER_FOLDER/variables.tf"; then
+            echo "Updated bucket_name successfully."
+          else
+            echo "Failed to update bucket_name."
+          fi
+          
+          # Проверка изменений
+          echo "Updated contents of variables.tf:"
+          cat "$USER_FOLDER/variables.tf"
 
       - name: Commit changes
         run: |
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
-          git add "$USER_FOLDER/main.tf"
+          git add "$USER_FOLDER/main.tf" "$USER_FOLDER/variables.tf"  # Коммитим оба файла
           git commit -m "Add Terraform configuration for $USER_FOLDER"
           git push
-        env:
-          USER_FOLDER: ./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}
