@@ -1,7 +1,7 @@
 name: Configure AWS Credentials
 
-on:
-  workflow_dispatch:
+# on:
+#   workflow_dispatch:
 
 jobs:
   configure-aws:
