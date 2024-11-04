@@ -50,7 +50,8 @@ jobs:
           #include: "${{ env.MAIN_FILE }}"
           #include: "**$MAIN_FILE"
           #include: "**sss_main.tf"
-          include: "./tf4/${{ github.event.inputs.resource_name }}_main.tf"
+          #include: "./tf4/${{ github.event.inputs.resource_name }}_main.tf"
+          include: "${{ format('./tf2/{}_main.tf', github.event.inputs.resource_name) }}"
           regex: false
 
       - name: Commit changes
