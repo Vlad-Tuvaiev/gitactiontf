@@ -1,3 +1,82 @@
+# name: Generate Terraform Configuration
+
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       region:
+#         description: 'AWS region for the S3 bucket'
+#         required: true
+#         default: 'us-west-2'
+#       bucket_name:
+#         description: 'Name for the S3 bucket'
+#         required: true
+#         default: 'my-example-bucket'
+#       folder_name:
+#         description: 'Unique folder name for resources'
+#         required: true
+#         default: 'default-folder'
+
+# jobs:
+#   create-terraform-file:
+#     runs-on: ubuntu-latest
+#     environment: main
+
+#     # env:
+#     #   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#     #   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Create unique folder for this run
+#         run: |
+#           export USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
+#           mkdir -p "$USER_FOLDER"
+#           cp ./tf/main.tf "$USER_FOLDER"
+#           cp ./tf/variables.tf "$USER_FOLDER"  # Копируем файл переменных
+
+#       - name: Update Terraform variables file
+#         run: |
+#           USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
+
+#           # Обновляем значение по умолчанию для region
+#           sed -i 's/default *= *"us-west-1"/default = "${{ github.event.inputs.region }}"/' "$USER_FOLDER/variables.tf"
+
+#           # Обновляем значение по умолчанию для bucket_name
+#           sed -i 's/default *= *"my-example-bucket"/default = "${{ github.event.inputs.bucket_name }}"/' "$USER_FOLDER/variables.tf"
+
+#       - name: Commit changes
+#         run: |
+#           USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
+#           cd "$USER_FOLDER"  # Перейдите в нужную директорию
+          
+#           git config --local user.name "GitHub Actions"
+#           git config --local user.email "actions@github.com"  # Добавляем email, если это необходимо
+          
+#           git add .
+#           git commit -m "Add Terraform configuration for $USER_FOLDER"
+#           git push
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-2
+
+#       - name: Initialize Terraform
+#         run: terraform init
+#         working-directory: "./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
+
+#       - name: Apply Terraform
+#         run: terraform apply -auto-approve
+#         working-directory: "./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"  
+#         env:
+#           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+
 name: Generate Terraform Configuration
 
 on:
@@ -11,61 +90,53 @@ on:
         description: 'Name for the S3 bucket'
         required: true
         default: 'my-example-bucket'
-      folder_name:
-        description: 'Unique folder name for resources'
+      resource_name:
+        description: 'Unique resources name'
         required: true
-        default: 'default-folder'
+        default: 'S3'
 
 jobs:
   create-terraform-file:
     runs-on: ubuntu-latest
     environment: main
 
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Create unique folder for this run
+      - name: Create unique Terraform files
         run: |
-          export USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
-          mkdir -p "$USER_FOLDER"
-          cp ./tf/main.tf "$USER_FOLDER"
-          cp ./tf/variables.tf "$USER_FOLDER"  # Копируем файл переменных
-          ls -al "$USER_FOLDER"  # Проверка содержимого папки для отладки
+          # Задаем уникальные имена для файлов
+          UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+          MAIN_FILE="./tf/${UNIQUE_NAME}_main.tf"
+          VARS_FILE="./tf/${UNIQUE_NAME}_vars.tf"
+
+          # Копируем шаблон main.tf и variables.tf с новыми именами
+          cp ./tf/main.tf "$MAIN_FILE"
+          cp ./tf/variables.tf "$VARS_FILE"
 
       - name: Update Terraform variables file
         run: |
-          USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
-          echo "Updating variables file in $USER_FOLDER/variables.tf"
-          
-          # Проверка содержимого перед заменой
-          echo "Current contents of variables.tf before updates:"
-          cat "$USER_FOLDER/variables.tf"
+          UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+          VARS_FILE="./tf/${UNIQUE_NAME}_vars.tf"
 
           # Обновляем значение по умолчанию для region
-          sed -i 's/default *= *"us-west-1"/default = "${{ github.event.inputs.region }}"/' "$USER_FOLDER/variables.tf"
+          sed -i 's/default *= *"us-west-1"/default = "${{ github.event.inputs.region }}"/' "$VARS_FILE"
 
           # Обновляем значение по умолчанию для bucket_name
-          sed -i 's/default *= *"my-example-bucket"/default = "${{ github.event.inputs.bucket_name }}"/' "$USER_FOLDER/variables.tf"
-
-          # Проверка изменений после замены
-          echo "Updated contents of variables.tf after updates:"
-          cat "$USER_FOLDER/variables.tf"
+          sed -i 's/default *= *"my-example-bucket"/default = "${{ github.event.inputs.bucket_name }}"/' "$VARS_FILE"
 
       - name: Commit changes
         run: |
-          USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
-          cd "$USER_FOLDER"  # Перейдите в нужную директорию
-          
+          UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+          MAIN_FILE="./tf/${UNIQUE_NAME}_main.tf"
+          VARS_FILE="./tf/${UNIQUE_NAME}_vars.tf"
+
           git config --local user.name "GitHub Actions"
-          git config --local user.email "actions@github.com"  # Добавляем email, если это необходимо
+          git config --local user.email "actions@github.com"
           
-          git add .
-          git commit -m "Add Terraform configuration for $USER_FOLDER"
+          git add "$MAIN_FILE" "$VARS_FILE"
+          git commit -m "Add Terraform configuration for $UNIQUE_NAME"
           git push
 
       - name: Configure AWS Credentials
@@ -77,11 +148,11 @@ jobs:
 
       - name: Initialize Terraform
         run: terraform init
-        working-directory: "./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"  # Указываем правильный путь
+        working-directory: "./tf"
 
       - name: Apply Terraform
         run: terraform apply -auto-approve
-        working-directory: "./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"  # Указываем правильный путь
+        working-directory: "./tf"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
