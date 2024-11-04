@@ -69,3 +69,15 @@ jobs:
           git commit -m "Add Terraform configuration for $USER_FOLDER"
           git push
 
+
+
+      - name: Initialize Terraform
+        working-directory: "$USER_FOLDER"  # Указываем директорию
+        run: terraform init
+
+      - name: Apply Terraform
+        working-directory: "$USER_FOLDER"  # Указываем директорию
+        run: terraform apply -auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
