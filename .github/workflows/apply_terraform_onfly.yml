@@ -1,4 +1,4 @@
-name: Generate Terraform Configuration copy and SED
+name: Generate Terraform Configuration
 
 on:
   workflow_dispatch:
@@ -25,24 +25,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Create unique Terraform files
+      - name: Create unique Terraform file
         run: |
           UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
-          MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
-          cp ./tf2/main.tf "$MAIN_FILE"
-
-      - name: Update Terraform variables file
-        run: |
-          UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
-          MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
-          sed -i 's/bucket = "templatebacketfortest"/bucket = "${{ github.event.inputs.bucket_name }}"/' "$MAIN_FILE"
-          sed -i 's/resource "aws_s3_bucket" "s3"/resource "aws_s3_bucket" "${{ github.event.inputs.bucket_name }}"/' "$MAIN_FILE"
-          sed -i '/provider "aws" {/,/}/{d}' "$MAIN_FILE"
+          MAIN_FILE="./tf3/${UNIQUE_NAME}_main.tf"
+          
+          # Создаем новый файл с необходимым содержимым
+          echo 'resource "aws_s3_bucket" "${{ github.event.inputs.bucket_name }}" {' > "$MAIN_FILE"
+          echo "  bucket = \"${{ github.event.inputs.bucket_name }}\"" >> "$MAIN_FILE"
+          echo '  acl    = "private"' >> "$MAIN_FILE"
+          echo '}' >> "$MAIN_FILE"
 
       - name: Commit changes
         run: |
           UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
-          MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
+          MAIN_FILE="./tf3/${UNIQUE_NAME}_main.tf"
 
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
@@ -60,12 +57,11 @@ jobs:
 
       - name: Initialize Terraform
         run: terraform init
-        working-directory: "./tf2"
+        working-directory: "./tf3"
 
       - name: Apply Terraform
         run: terraform apply -auto-approve
-        working-directory: "./tf2"
+        working-directory: "./tf3"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
