@@ -40,18 +40,25 @@ jobs:
     #       sed -i '/provider "aws" {/,/}/{d}' "$MAIN_FILE"
 
       - name: Set file path
-        run: echo "MAIN_FILE=./tf2/${{ github.event.inputs.resource_name }}_main.tf" >> $GITHUB_ENV
+        run: echo "MAIN_FILE=./tf4/${{ github.event.inputs.resource_name }}_main.tf" >> $GITHUB_ENV
+
+      - name: Check MAIN_FILE
+        run: echo "MAIN_FILE is set to $MAIN_FILE"
+
+      - name: Check file existence
+        run: ls -al ./tf4/
 
       - name: Find and Replace
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: "templatebacketfortest"
           replace: "${{ github.event.inputs.bucket_name }}"
-          #include: "${{ env.MAIN_FILE }}"
+          include: "${{ env.MAIN_FILE }}"
           #include: "**$MAIN_FILE"
           #include: "**sss_main.tf"
           #include: "./tf4/${{ github.event.inputs.resource_name }}_main.tf"
-          include: "${{ format('./tf2/{}_main.tf', github.event.inputs.resource_name) }}"
+          #include: "${{ format('./tf2/{}_main.tf', github.event.inputs.resource_name) }}"
+          #include: "${{ env.MAIN_FILE }}"
           regex: false
 
       - name: Commit changes
