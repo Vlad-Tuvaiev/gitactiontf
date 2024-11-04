@@ -193,7 +193,13 @@ jobs:
         uses: flcdrg/replace-multiple-action@v1
         with:
           files: './tf2/${{ github.event.inputs.resource_name }}_main.tf'
-          find: '[{ "find": "bucket = \"templatebacketfortest\"", "replace": "bucket = \"${{ github.event.inputs.bucket_name }}\"" }, { "find": "provider \"aws\" {\\n  region = \"us-west-1\"\\n}", "replace": "" }]'
+          find: |
+            [
+              { "find": "bucket = \"templatebacketfortest\"", "replace": "bucket = \"${{ github.event.inputs.bucket_name }}\"" },
+              { "find": "provider \"aws\" {\\n  region = \"us-west-1\"\\n}", "replace": "" }
+            ]
+          encoding: utf-8
+
 
       - name: Commit changes
         run: |
