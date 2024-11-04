@@ -194,8 +194,7 @@ jobs:
         with:
           files: './tf2/${{ github.event.inputs.resource_name }}_main.tf'
           find: |
-            [{ "find": "bucket = \"templatebacketfortest\"", "replace": "bucket = \"${{ github.event.inputs.bucket_name }}\"" },
-             { "find": "region = \"us-west-1\"", "replace": "region = \"${{ github.event.inputs.region }}\"" },
+            [{ "find": "bucket = "templatebacketfortest"", "replace": "bucket = "${{ github.event.inputs.bucket_name }}"" },
              { "find": "provider \"aws\" {\\n  region = \"us-west-1\"\\n}", "replace": "" }]
 
       - name: Commit changes
