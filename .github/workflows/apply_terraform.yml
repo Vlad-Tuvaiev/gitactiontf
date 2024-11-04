@@ -77,6 +77,84 @@
 #           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 
+# name: Generate Terraform Configuration
+
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       region:
+#         description: 'AWS region for the S3 bucket'
+#         required: true
+#         default: 'us-west-2'
+#       bucket_name:
+#         description: 'Name for the S3 bucket'
+#         required: true
+#         default: 'my-example-bucket'
+#       resource_name:
+#         description: 'Unique resources name'
+#         required: true
+#         default: 'S3'
+
+# jobs:
+#   create-terraform-file:
+#     runs-on: ubuntu-latest
+#     environment: main
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Create unique Terraform files
+#         run: |
+#           # Задаем уникальные имена для файлов
+#           UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+#           MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
+
+
+
+#           cp ./tf2/main.tf "$MAIN_FILE"
+
+
+#       - name: Update Terraform variables file
+#         run: |
+#           UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+#           MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
+
+#           sed -i 's/bucket *= *"templatebacketfortest"/bucket = "${{ github.event.inputs.bucket_name }}"/' "$MAIN_FILE"
+#           sed -i 's/region *= *"us-west-1"/region = "${{ github.event.inputs.region }}"/' "$MAIN_FILE"
+
+#       - name: Commit changes
+#         run: |
+#           UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+#           MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
+
+
+#           git config --local user.name "GitHub Actions"
+#           git config --local user.email "actions@github.com"
+          
+#           git add "$MAIN_FILE"
+#           git commit -m "Add Terraform configuration for $UNIQUE_NAME"
+#           git push
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-2
+
+#       - name: Initialize Terraform
+#         run: terraform init
+#         working-directory: "./tf2"
+
+#       - name: Apply Terraform
+#         run: terraform apply -auto-approve
+#         working-directory: "./tf2"
+#         env:
+#           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+
 name: Generate Terraform Configuration
 
 on:
@@ -109,25 +187,21 @@ jobs:
           # Задаем уникальные имена для файлов
           UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
           MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
-
-
-
           cp ./tf2/main.tf "$MAIN_FILE"
 
-
       - name: Update Terraform variables file
-        run: |
-          UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
-          MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
-
-          sed -i 's/bucket *= *"templatebacketfortest"/bucket = "${{ github.event.inputs.bucket_name }}"/' "$MAIN_FILE"
-          sed -i 's/region *= *"us-west-1"/region = "${{ github.event.inputs.region }}"/' "$MAIN_FILE"
+        uses: flcdrg/replace-multiple-action@v1
+        with:
+          files: './tf2/${{ github.event.inputs.resource_name }}_main.tf'
+          find: |
+            [{ "find": "bucket = \"templatebacketfortest\"", "replace": "bucket = \"${{ github.event.inputs.bucket_name }}\"" },
+             { "find": "region = \"us-west-1\"", "replace": "region = \"${{ github.event.inputs.region }}\"" },
+             { "find": "provider \"aws\" {\\n  region = \"us-west-1\"\\n}", "replace": "" }]
 
       - name: Commit changes
         run: |
           UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
           MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
-
 
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
@@ -153,3 +227,4 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
