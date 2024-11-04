@@ -1,7 +1,7 @@
 name: Configure AWS Credentials
 
-# on:
-#   workflow_dispatch:
+on:
+  workflow_dispatch:
 
 jobs:
   configure-aws:
@@ -21,8 +21,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: AKIAR5LYCFR7D2UDKGUK #${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: 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 #${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
       - name: Verify AWS Credentials
