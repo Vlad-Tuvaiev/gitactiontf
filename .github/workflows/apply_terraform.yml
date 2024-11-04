@@ -196,6 +196,7 @@ jobs:
           
           # Заменяем значения с помощью sed
           sed -i 's/bucket = "templatebacketfortest"/bucket = "${{ github.event.inputs.bucket_name }}"/' "$MAIN_FILE"
+          sed -i 's/resource "aws_s3_bucket" "s3"/resource "aws_s3_bucket" "${{ github.event.inputs.bucket_name }}"/' "$MAIN_FILE"
           sed -i '/provider "aws" {/,/}/{d}' "$MAIN_FILE" # Удаляем блок провайдера
 
 
