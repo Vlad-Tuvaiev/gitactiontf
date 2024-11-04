@@ -32,33 +32,24 @@ jobs:
         run: |
           export USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
           mkdir -p "$USER_FOLDER"
-          cp ./tf/main.tf "$USER_FOLDER"  # копирование main.tf в новую папку
+          cp ./tf/main.tf "$USER_FOLDER"
           ls -al "$USER_FOLDER"  # проверка содержимого папки для отладки
-
-      # - name: Set up Terraform
-      #   uses: hashicorp/setup-terraform@v2
-      #   with:
-      #     terraform_version: 1.0.0
-
-      # - name: Initialize Terraform
-      #   working-directory: ${{ env.USER_FOLDER }}
-      #   run: terraform init
-
-      # - name: Apply Terraform
-      #   working-directory: ${{ env.USER_FOLDER }}
-      #   run: |
-      #     terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}" -var="bucket_name=${{ github.event.inputs.bucket_name }}"
+        env:
+          USER_FOLDER: ./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}
 
       - name: Update Terraform file with specified parameters
-        working-directory: ${{ env.USER_FOLDER }}
         run: |
-          sed -i "s/variable \\"region\\" {.*/variable \\"region\\" { default = \\"${{ github.event.inputs.region }}\\" }/" main.tf
-          sed -i "s/variable \\"bucket_name\\" {.*/variable \\"bucket_name\\" { default = \\"${{ github.event.inputs.bucket_name }}\\" }/" main.tf
+          sed -i "s/variable \\"region\\" {.*/variable \\"region\\" { default = \\"${{ github.event.inputs.region }}\\" }/" "$USER_FOLDER/main.tf"
+          sed -i "s/variable \\"bucket_name\\" {.*/variable \\"bucket_name\\" { default = \\"${{ github.event.inputs.bucket_name }}\\" }/" "$USER_FOLDER/main.tf"
+        env:
+          USER_FOLDER: ./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}
 
       - name: Commit changes
         run: |
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
-          git add $USER_FOLDER/main.tf
+          git add "$USER_FOLDER/main.tf"
           git commit -m "Add Terraform configuration for $USER_FOLDER"
           git push
+        env:
+          USER_FOLDER: ./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}
