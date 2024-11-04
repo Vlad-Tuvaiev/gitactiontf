@@ -44,7 +44,7 @@ jobs:
         with:
           find: "templatebacketfortest"
           replace: "${{ github.event.inputs.bucket_name }}"
-          include: "$MAIN_FILE"
+          include: "./tf4/${{ github.event.inputs.resource_name }}_main.tf"
           regex: false
 
       - name: Commit changes
