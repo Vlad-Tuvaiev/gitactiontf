@@ -26,13 +26,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # обновленная версия checkout action
 
       - name: Create unique folder for this run
         run: |
           export USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
           mkdir -p "$USER_FOLDER"
-          cp ./tf/main.tf "$USER_FOLDER"
+          cp ./tf/main.tf "$USER_FOLDER"  # копирование main.tf в новую папку
+          ls -al "$USER_FOLDER"  # проверка содержимого папки для отладки
 
       # - name: Set up Terraform
       #   uses: hashicorp/setup-terraform@v2
