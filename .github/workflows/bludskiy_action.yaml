@@ -53,7 +53,7 @@ jobs:
         with:
           find: "templatebacketfortest"
           replace: "${{ github.event.inputs.bucket_name }}"
-          include: "${{ env.MAIN_FILE }}"
+          include: "**${{ env.MAIN_FILE }}"
           #include: "**$MAIN_FILE"
           #include: "**sss_main.tf"
           #include: "./tf4/${{ github.event.inputs.resource_name }}_main.tf"
