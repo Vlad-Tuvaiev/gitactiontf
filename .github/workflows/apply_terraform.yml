@@ -1,0 +1,63 @@
+name: Generate Terraform Configuration
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'AWS region for the S3 bucket'
+        required: true
+        default: 'us-west-2'
+      bucket_name:
+        description: 'Name for the S3 bucket'
+        required: true
+        default: 'my-example-bucket'
+      folder_name:
+        description: 'Unique folder name for resources'
+        required: true
+        default: 'default-folder'
+
+jobs:
+  create-terraform-file:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Create unique folder for this run
+        run: |
+          export USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
+          mkdir -p "$USER_FOLDER"
+          cp ./tf/main.tf "$USER_FOLDER"
+
+      # - name: Set up Terraform
+      #   uses: hashicorp/setup-terraform@v2
+      #   with:
+      #     terraform_version: 1.0.0
+
+      # - name: Initialize Terraform
+      #   working-directory: ${{ env.USER_FOLDER }}
+      #   run: terraform init
+
+      # - name: Apply Terraform
+      #   working-directory: ${{ env.USER_FOLDER }}
+      #   run: |
+      #     terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}" -var="bucket_name=${{ github.event.inputs.bucket_name }}"
+
+      - name: Update Terraform file with specified parameters
+        working-directory: ${{ env.USER_FOLDER }}
+        run: |
+          sed -i "s/variable \\"region\\" {.*/variable \\"region\\" { default = \\"${{ github.event.inputs.region }}\\" }/" main.tf
+          sed -i "s/variable \\"bucket_name\\" {.*/variable \\"bucket_name\\" { default = \\"${{ github.event.inputs.bucket_name }}\\" }/" main.tf
+
+      - name: Commit changes
+        run: |
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git add $USER_FOLDER/main.tf
+          git commit -m "Add Terraform configuration for $USER_FOLDER"
+          git push
