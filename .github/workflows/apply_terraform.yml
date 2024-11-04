@@ -59,8 +59,13 @@ jobs:
 
       - name: Commit changes
         run: |
+          USER_FOLDER="./tf/${{ github.actor }}_${{ github.event.inputs.folder_name }}"
+          cd "$USER_FOLDER"  # Перейдите в нужную директорию
+          
           git config --local user.name "GitHub Actions"
-          git config --local user.email "actions@github.com"
-          git add "$USER_FOLDER/main.tf" "$USER_FOLDER/variables.tf"  # Коммитим оба файла
+          git config --local user.email "actions@github.com"  # Добавляем email, если это необходимо
+          
+          git add .
           git commit -m "Add Terraform configuration for $USER_FOLDER"
           git push
+
