@@ -190,18 +190,13 @@ jobs:
           cp ./tf2/main.tf "$MAIN_FILE"
 
       - name: Update Terraform variables file
-        uses: andreahp/replace@v1
-        with:
-          files: './tf2/${{ github.event.inputs.resource_name }}_main.tf'
-          regex: 'bucket = "templatebacketfortest"'
-          replace: 'bucket = "${{ github.event.inputs.bucket_name }}"'
-
-      - name: Remove AWS provider block
-        uses: andreahp/replace@v1
-        with:
-          files: './tf2/${{ github.event.inputs.resource_name }}_main.tf'
-          regex: 'provider "aws" {\\n  region = "us-west-1"\\n}'
-          replace: ''
+        run: |
+          UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+          MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
+          
+          # Заменяем значения с помощью sed
+          sed -i 's/bucket = "templatebacketfortest"/bucket = "${{ github.event.inputs.bucket_name }}"/' "$MAIN_FILE"
+          sed -i '/provider "aws" {/,/}/{d}' "$MAIN_FILE" # Удаляем блок провайдера
 
 
 
