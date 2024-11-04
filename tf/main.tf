@@ -1,15 +1,18 @@
+variable "region" {
+  description = "Region for the S3 bucket"
+}
+
+variable "bucket_name" {
+  description = "Name for the S3 bucket"
+}
+
 provider "aws" {
-  region = "us-west-2" # укажите ваш регион
+  region = var.region
 }
 
 resource "aws_s3_bucket" "example" {
-  bucket = "my-example-bucket" # укажите уникальное имя для бакета
+  bucket = var.bucket_name
   acl    = "private"
-
-  tags = {
-    Name        = "Example S3 Bucket"
-    Environment = "Dev"
-  }
 }
 
 output "bucket_arn" {
