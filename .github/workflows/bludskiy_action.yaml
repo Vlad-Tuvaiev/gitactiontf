@@ -42,12 +42,6 @@ jobs:
       - name: Set file name
         run: echo "MAIN_FILE=${{ github.event.inputs.resource_name }}_main.tf" >> $GITHUB_ENV
 
-      - name: Check MAIN_FILE
-        run: echo "MAIN_FILE is set to $MAIN_FILE"
-
-      - name: Check file existence
-        run: ls -al ./tf4/
-
       - name: Find and Replace
         uses: jacobtomlinson/gha-find-replace@v3
         with:
