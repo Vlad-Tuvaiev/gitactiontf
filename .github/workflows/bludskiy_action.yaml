@@ -44,6 +44,7 @@ jobs:
         with:
           find: "templatebacketfortest"
           replace: "${{ github.event.inputs.bucket_name }}"
+          include: "$MAIN_FILE"
           regex: false
 
       - name: Commit changes
