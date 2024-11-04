@@ -118,7 +118,7 @@ jobs:
       - name: Update Terraform variables file
         run: |
           UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
-          MAIN_FILE="./tf2/${UNIQUE_NAME}_vars.tf"
+          MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
 
           sed -i 's/bucket *= *"templatebacketfortest"/bucket = "${{ github.event.inputs.bucket_name }}"/' "$MAIN_FILE"
           sed -i 's/region *= *"us-west-1"/region = "${{ github.event.inputs.region }}"/' "$MAIN_FILE"
