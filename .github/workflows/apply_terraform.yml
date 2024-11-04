@@ -45,23 +45,16 @@ jobs:
           echo "Current contents of variables.tf before updates:"
           cat "$USER_FOLDER/variables.tf"
 
-          # Обновляем region
-          if sed -i "s/default = \\".*\\"/default = \\"${{ github.event.inputs.region }}\\"/" "$USER_FOLDER/variables.tf"; then
-            echo "Updated region successfully."
-          else
-            echo "Failed to update region."
-          fi
+          # Обновляем значение по умолчанию для region
+          sed -i 's/default *= *"us-west-1"/default = "${{ github.event.inputs.region }}"/' "$USER_FOLDER/variables.tf"
 
-          # Обновляем bucket_name
-          if sed -i "s/default = \\".*\\"/default = \\"${{ github.event.inputs.bucket_name }}\\"/" "$USER_FOLDER/variables.tf"; then
-            echo "Updated bucket_name successfully."
-          else
-            echo "Failed to update bucket_name."
-          fi
-          
+          # Обновляем значение по умолчанию для bucket_name
+          sed -i 's/default *= *"my-example-bucket"/default = "${{ github.event.inputs.bucket_name }}"/' "$USER_FOLDER/variables.tf"
+
           # Проверка изменений после замены
           echo "Updated contents of variables.tf after updates:"
           cat "$USER_FOLDER/variables.tf"
+
 
 
       - name: Commit changes
