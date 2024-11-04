@@ -189,17 +189,19 @@ jobs:
           MAIN_FILE="./tf2/${UNIQUE_NAME}_main.tf"
           cp ./tf2/main.tf "$MAIN_FILE"
 
-      - name: Replace strings in Terraform file
-        uses: patrys/replace-string@v2
+      - name: Update Terraform variables file
+        uses: andreahp/replace@v1
         with:
-          search: |
-            bucket = "templatebacketfortest"
-            provider "aws" {
-              region = "us-west-1"
-            }
-          replace: |
-            bucket = "${{ github.event.inputs.bucket_name }}"
           files: './tf2/${{ github.event.inputs.resource_name }}_main.tf'
+          regex: 'bucket = "templatebacketfortest"'
+          replace: 'bucket = "${{ github.event.inputs.bucket_name }}"'
+
+      - name: Remove AWS provider block
+        uses: andreahp/replace@v1
+        with:
+          files: './tf2/${{ github.event.inputs.resource_name }}_main.tf'
+          regex: 'provider "aws" {\\n  region = "us-west-1"\\n}'
+          replace: ''
 
 
 
