@@ -1,4 +1,4 @@
-name: Generate Terraform Configuration
+name: Generate Terraform Configuration on fly
 
 on:
   workflow_dispatch:
