@@ -84,15 +84,10 @@ jobs:
           UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
           MAIN_FILE="./tf5/${UNIQUE_NAME}_main.tf"
 
-          git config --local user.name "GitHub Actions"
-          git config --local user.email "actions@github.com"
-          
-          echo "Adding file: $MAIN_FILE"
-          if [ -f "$MAIN_FILE" ]; then
-            git add "$MAIN_FILE"
-            git commit -m "Add Terraform configuration for $UNIQUE_NAME"
-            echo "Pushing to branch: $BRANCH_NAME"
-            git push --set-upstream origin "$BRANCH_NAME"
+
+          git add "$MAIN_FILE"
+          git commit -m "Add Terraform configuration for $UNIQUE_NAME"
+          git push --set-upstream origin "$BRANCH_NAME"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
