@@ -92,11 +92,9 @@ jobs:
             git add "$MAIN_FILE"
             git commit -m "Add Terraform configuration for $UNIQUE_NAME"
             echo "Pushing to branch: $BRANCH_NAME"
-            git push origin "$BRANCH_NAME"
-          else
-            echo "Error: $MAIN_FILE does not exist!"
-            exit 1
-          fi
+            git push --set-upstream origin "$BRANCH_NAME"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Create pull request
         uses: repo-sync/pull-request@v2
