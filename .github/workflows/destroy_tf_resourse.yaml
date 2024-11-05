@@ -6,7 +6,10 @@ on:
       file_name:
         description: 'Terraform file to delete (e.g., test1_main.tf)'
         required: true
-
+      region:
+        description: 'AWS region for the S3 bucket'
+        required: true
+        default: 'us-west-2'
 jobs:
   delete-terraform-file:
     runs-on: ubuntu-latest
