@@ -1,0 +1,64 @@
+name: Generate Terraform Configuration with Jinja2
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'AWS region for the S3 bucket'
+        required: true
+        default: 'us-west-2'
+      bucket_name:
+        description: 'Name for the S3 bucket'
+        required: true
+        default: 'my-example-bucket'
+      resource_name:
+        description: 'Unique resources name'
+        required: true
+        default: 'S3'
+
+jobs:
+  create-terraform-file:
+    runs-on: ubuntu-latest
+    environment: main
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Render Jinja2 template
+        uses: cuchi/jinja2-action@v1.2.2
+        with:
+          template: "./tf5/s3_template.j2"
+          output_file: "./tf5/${{ github.event.inputs.resource_name }}_main.tf"
+          variables: |
+            bucket_name=${{ github.event.inputs.bucket_name }}
+
+      - name: Commit changes
+        run: |
+          UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+          MAIN_FILE="./tf5/${UNIQUE_NAME}_main.tf"
+
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          
+          git add "$MAIN_FILE"
+          git commit -m "Add Terraform configuration for $UNIQUE_NAME"
+          git push
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.inputs.region }}
+
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: "./tf5"
+
+      - name: Apply Terraform
+        run: terraform apply -auto-approve
+        working-directory: "./tf5"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
