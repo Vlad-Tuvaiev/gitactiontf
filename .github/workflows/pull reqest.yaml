@@ -1,36 +1,4 @@
-# name: Create Branch
-
-# on:
-#   workflow_dispatch:
-#     inputs:
-#       resource_name:
-#         description: 'Unique resource name'
-#         required: true
-#         default: 'S3'
-
-# jobs:
-#   create-branch:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v3
-
-#       - name: Create new branch
-#         run: |
-#           BRANCH_NAME="feature/${{ github.event.inputs.resource_name }}-resource"
-#           echo "Creating and switching to branch: $BRANCH_NAME"
-#           git checkout -b "$BRANCH_NAME"
-#           git push --set-upstream origin "$BRANCH_NAME"
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#       - name: Verify branch creation
-#         run: git branch
-
-
 name: Generate Terraform Configuration with Jinja2 and PR
-
 on:
   workflow_dispatch:
     inputs:
@@ -51,21 +19,14 @@ jobs:
   create-terraform-file:
     runs-on: ubuntu-latest
     environment: main
-    # permissions:
-    #     actions: write
-    #     contents: read
-    #     id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        # with:
-        #   token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create new branch
         run: |
           BRANCH_NAME="feature/${{ github.event.inputs.resource_name }}-resource"
-          echo "Creating and switching to branch: $BRANCH_NAME"
           git checkout -b "$BRANCH_NAME"
           git push --set-upstream origin "$BRANCH_NAME"
         env:
@@ -87,7 +48,6 @@ jobs:
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
 
-          # Проверяем, существует ли файл, прежде чем пытаться его закоммитить
           if [ -f "$MAIN_FILE" ]; then
           git add "$MAIN_FILE"
           git commit -m "Add Terraform configuration for $UNIQUE_NAME"
