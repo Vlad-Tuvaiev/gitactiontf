@@ -50,7 +50,7 @@ on:
 jobs:
   create-terraform-file:
     runs-on: ubuntu-latest
-    # environment: main
+    environment: main
     # permissions:
     #     actions: write
     #     contents: read
