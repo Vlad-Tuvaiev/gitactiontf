@@ -25,6 +25,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Create new branch
+        run: |
+          BRANCH_NAME="feature/${{ github.event.inputs.resource_name }}-resource"
+          echo "Creating and switching to branch: $BRANCH_NAME"
+          git checkout -b "$BRANCH_NAME"
+
       - name: Render Jinja2 template
         uses: cuchi/jinja2-action@v1.2.2
         with:
@@ -32,11 +38,6 @@ jobs:
           output_file: "./tf5/${{ github.event.inputs.resource_name }}_main.tf"
           variables: |
             bucket_name=${{ github.event.inputs.bucket_name }}
-
-      - name: Create new branch
-        run: |
-          BRANCH_NAME="feature/${{ github.event.inputs.resource_name }}-resource"
-          git checkout -b "$BRANCH_NAME"
 
       - name: Commit new Terraform file
         run: |
@@ -46,9 +47,16 @@ jobs:
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
           
-          git add "$MAIN_FILE"
-          git commit -m "Add Terraform configuration for $UNIQUE_NAME"
-          git push origin "$BRANCH_NAME"
+          echo "Adding file: $MAIN_FILE"
+          if [ -f "$MAIN_FILE" ]; then
+            git add "$MAIN_FILE"
+            git commit -m "Add Terraform configuration for $UNIQUE_NAME"
+            echo "Pushing to branch: $BRANCH_NAME"
+            git push origin "$BRANCH_NAME"
+          else
+            echo "Error: $MAIN_FILE does not exist!"
+            exit 1
+          fi
 
       - name: Create pull request
         uses: repo-sync/pull-request@v2
