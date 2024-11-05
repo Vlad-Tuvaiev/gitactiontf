@@ -1,0 +1,74 @@
+name: Generate Terraform Configuration ACTION
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'AWS region for the S3 bucket'
+        required: true
+        default: 'us-west-2'
+      bucket_name:
+        description: 'Name for the S3 bucket'
+        required: true
+        default: 'my-example-bucket'
+      resource_name:
+        description: 'Unique resources name'
+        required: true
+        default: 'S3'
+
+jobs:
+  create-terraform-file:
+    runs-on: ubuntu-latest
+    environment: main
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Create unique Terraform files
+        run: |
+          UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+          MAIN_FILE="./tf4/${UNIQUE_NAME}_main.tf"
+          cp ./tf4/template_main.txt "$MAIN_FILE"
+
+      - name: Set file name
+        run: echo "MAIN_FILE=${{ github.event.inputs.resource_name }}_main.tf" >> $GITHUB_ENV
+
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: "templatebacketfortest"
+          replace: "${{ github.event.inputs.bucket_name }}"
+          include: "**${{ env.MAIN_FILE }}"
+          regex: false
+
+      - name: Commit changes
+        run: |
+          UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+          MAIN_FILE="./tf4/${UNIQUE_NAME}_main.tf"
+
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          
+          git add "$MAIN_FILE"
+          git commit -m "Add Terraform configuration for $UNIQUE_NAME"
+          git push
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: "./tf4"
+
+      - name: Apply Terraform
+        run: terraform apply -auto-approve
+        working-directory: "./tf4"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
