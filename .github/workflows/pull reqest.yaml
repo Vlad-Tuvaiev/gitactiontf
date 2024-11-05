@@ -34,6 +34,7 @@ jobs:
           BRANCH_NAME="feature/${{ github.event.inputs.resource_name }}-resource"
           echo "Creating and switching to branch: $BRANCH_NAME"
           git checkout -b "$BRANCH_NAME"
+          git push
 
     #   - name: Render Jinja2 template
     #     uses: cuchi/jinja2-action@v1.2.2
