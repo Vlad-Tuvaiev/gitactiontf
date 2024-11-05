@@ -50,17 +50,17 @@ on:
 jobs:
   create-terraform-file:
     runs-on: ubuntu-latest
-    environment: main
-    permissions:
-        actions: write
-        contents: read
-        id-token: write
+    # environment: main
+    # permissions:
+    #     actions: write
+    #     contents: read
+    #     id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        # with:
+        #   token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create new branch
         run: |
