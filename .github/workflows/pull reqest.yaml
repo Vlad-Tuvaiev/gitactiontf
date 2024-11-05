@@ -86,11 +86,17 @@ jobs:
 
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
+
+          # Проверяем, существует ли файл, прежде чем пытаться его закоммитить
+          if [ -f "$MAIN_FILE" ]; then
           git add "$MAIN_FILE"
           git commit -m "Add Terraform configuration for $UNIQUE_NAME"
-          git push --set-upstream origin "$BRANCH_NAME"
+          git push
+          else
+          echo "File $MAIN_FILE does not exist. Skipping commit."
+          fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create pull request
         uses: repo-sync/pull-request@v2
