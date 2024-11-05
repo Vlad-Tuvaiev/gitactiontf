@@ -1,0 +1,60 @@
+name: Generate Terraform Configuration with Jinja2 and PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'AWS region for the S3 bucket'
+        required: true
+        default: 'us-west-2'
+      bucket_name:
+        description: 'Name for the S3 bucket'
+        required: true
+        default: 'my-example-bucket'
+      resource_name:
+        description: 'Unique resources name'
+        required: true
+        default: 'S3'
+
+jobs:
+  create-terraform-file:
+    runs-on: ubuntu-latest
+    environment: main
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Render Jinja2 template
+        uses: cuchi/jinja2-action@v1.2.2
+        with:
+          template: "./tf5/s3_template.j2"
+          output_file: "./tf5/${{ github.event.inputs.resource_name }}_main.tf"
+          variables: |
+            bucket_name=${{ github.event.inputs.bucket_name }}
+
+      - name: Create new branch
+        run: |
+          BRANCH_NAME="feature/${{ github.event.inputs.resource_name }}-resource"
+          git checkout -b "$BRANCH_NAME"
+
+      - name: Commit new Terraform file
+        run: |
+          UNIQUE_NAME="${{ github.event.inputs.resource_name }}"
+          MAIN_FILE="./tf5/${UNIQUE_NAME}_main.tf"
+
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          
+          git add "$MAIN_FILE"
+          git commit -m "Add Terraform configuration for $UNIQUE_NAME"
+          git push origin "$BRANCH_NAME"
+
+      - name: Create pull request
+        uses: repo-sync/pull-request@v2
+        with:
+          destination_branch: main
+          pr_title: "Add new resource configuration for ${{ github.event.inputs.resource_name }}"
+          pr_body: "This PR adds a new Terraform configuration for resource ${{ github.event.inputs.resource_name }}"
+          pr_draft: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
