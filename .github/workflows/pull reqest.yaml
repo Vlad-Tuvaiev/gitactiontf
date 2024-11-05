@@ -1,20 +1,66 @@
-name: Create Branch
+# name: Create Branch
+
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       resource_name:
+#         description: 'Unique resource name'
+#         required: true
+#         default: 'S3'
+
+# jobs:
+#   create-branch:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Create new branch
+#         run: |
+#           BRANCH_NAME="feature/${{ github.event.inputs.resource_name }}-resource"
+#           echo "Creating and switching to branch: $BRANCH_NAME"
+#           git checkout -b "$BRANCH_NAME"
+#           git push --set-upstream origin "$BRANCH_NAME"
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#       - name: Verify branch creation
+#         run: git branch
+
+
+name: Generate Terraform Configuration with Jinja2 and PR
 
 on:
   workflow_dispatch:
     inputs:
+      region:
+        description: 'AWS region for the S3 bucket'
+        required: true
+        default: 'us-west-2'
+      bucket_name:
+        description: 'Name for the S3 bucket'
+        required: true
+        default: 'my-example-bucket'
       resource_name:
-        description: 'Unique resource name'
+        description: 'Unique resources name'
         required: true
         default: 'S3'
 
 jobs:
-  create-branch:
+  create-terraform-file:
     runs-on: ubuntu-latest
+    environment: main
+    permissions:
+        actions: write
+        contents: read
+        id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create new branch
         run: |
@@ -23,51 +69,7 @@ jobs:
           git checkout -b "$BRANCH_NAME"
           git push --set-upstream origin "$BRANCH_NAME"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Verify branch creation
-        run: git branch
-
-
-# name: Generate Terraform Configuration with Jinja2 and PR
-
-# on:
-#   workflow_dispatch:
-#     inputs:
-#       region:
-#         description: 'AWS region for the S3 bucket'
-#         required: true
-#         default: 'us-west-2'
-#       bucket_name:
-#         description: 'Name for the S3 bucket'
-#         required: true
-#         default: 'my-example-bucket'
-#       resource_name:
-#         description: 'Unique resources name'
-#         required: true
-#         default: 'S3'
-
-# jobs:
-#   create-terraform-file:
-#     runs-on: ubuntu-latest
-#     environment: main
-#     permissions:
-#         actions: write
-#         contents: read
-#         id-token: write
-
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v3
-#         with:
-#           token: ${{ secrets.GITHUB_TOKEN }}
-
-#       - name: Create new branch
-#         run: |
-#           BRANCH_NAME="feature/${{ github.event.inputs.resource_name }}-resource"
-#           echo "Creating and switching to branch: $BRANCH_NAME"
-#           git checkout -b "$BRANCH_NAME"
-#           git push --set-upstream origin "$BRANCH_NAME"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
 
     #   - name: Render Jinja2 template
     #     uses: cuchi/jinja2-action@v1.2.2
