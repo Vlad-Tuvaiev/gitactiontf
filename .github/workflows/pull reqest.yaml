@@ -20,6 +20,9 @@ jobs:
   create-terraform-file:
     runs-on: ubuntu-latest
     environment: main
+    permissions:
+        actions: write
+        contents: read
 
     steps:
       - name: Checkout repository
