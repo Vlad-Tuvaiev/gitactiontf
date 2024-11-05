@@ -98,11 +98,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create pull request
+      - name: Create Pull Request
         uses: repo-sync/pull-request@v2
         with:
           destination_branch: main
-          pr_title: "Add new resource configuration for ${{ github.event.inputs.resource_name }}"
-          pr_body: "This PR adds a new Terraform configuration for resource ${{ github.event.inputs.resource_name }}"
-          pr_draft: false
+          source_branch: feature/${{ github.event.inputs.resource_name }}-resource
+          pr_title: "Add Terraform resource for ${{ github.event.inputs.resource_name }}"
+          pr_body: "This PR adds the Terraform configuration for the resource `${{ github.event.inputs.resource_name }}`."
           github_token: ${{ secrets.GITHUB_TOKEN }}
