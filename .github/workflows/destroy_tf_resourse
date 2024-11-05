@@ -1,0 +1,53 @@
+name: Delete Terraform Resource
+
+on:
+  workflow_dispatch:
+    inputs:
+      file_name:
+        description: 'Terraform file to delete (e.g., test1_main.tf)'
+        required: true
+
+jobs:
+  delete-terraform-file:
+    runs-on: ubuntu-latest
+    environment: main
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Delete specified Terraform file
+        run: |
+          FILE_PATH="./tf4/${{ github.event.inputs.file_name }}"
+          if [ -f "$FILE_PATH" ]; then
+            rm "$FILE_PATH"
+            echo "Deleted file $FILE_PATH"
+          else
+            echo "File $FILE_PATH does not exist, skipping deletion."
+          fi
+
+      - name: Commit deletion
+        run: |
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git add -u
+          git commit -m "Delete Terraform configuration for ${{ github.event.inputs.file_name }}"
+          git push
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.inputs.region }}
+
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: "./tf4"
+
+      - name: Apply Terraform to delete resources
+        run: terraform apply -auto-approve
+        working-directory: "./tf4"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
