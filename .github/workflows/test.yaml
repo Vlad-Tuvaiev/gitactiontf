@@ -11,7 +11,8 @@ jobs:
   define-directories:
     runs-on: ubuntu-latest
     outputs:
-      dirs: ${{ steps.set-dirs.outputs.dirs }}
+      #dirs: ${{ steps.set-dirs.outputs.dirs }}
+      dirs: ${{ ./dir1, ./dir2 }}
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v3
