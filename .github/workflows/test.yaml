@@ -31,14 +31,14 @@ jobs:
           for dir in ${{ steps.changed-files.outputs.changed }}; do
             dirs+=("./$dir")
           done
-          echo "dirs=${dirs[@]}" >> $GITHUB_ENV  # Передаем список директорий в файл окружения
+          echo "dirs=$(echo ${dirs[@]} | jq -R .)" >> $GITHUB_ENV  # Передаем список директорий в файл окружения
 
   use-directories:
     needs: define-directories
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tf_path: ${{ fromJson(needs.define-directories.outputs.dirs | toJson) }}  # Используем toJson для корректного формата
+        tf_path: ${{ fromJson(needs.define-directories.outputs.dirs) }}  # Используем fromJson для корректного формата
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v3
