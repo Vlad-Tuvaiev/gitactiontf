@@ -1,7 +1,7 @@
 name: Share and Use Changed Directories
 
 on:
-  push:
+  pull_request:
     branches:
       - main
     paths:
@@ -11,8 +11,7 @@ jobs:
   define-directories:
     runs-on: ubuntu-latest
     outputs:
-      #dirs: ${{ steps.set-dirs.outputs.dirs }}
-      dirs: ${{ ./dir1, ./dir2 }}
+      dirs: ${{ steps.set-dirs.outputs.dirs }}
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v3
@@ -29,17 +28,17 @@ jobs:
         id: set-dirs
         run: |
           dirs=()
-          for dir in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          for dir in ${{ steps.changed-files.outputs.changed }}; do
             dirs+=("./$dir")
           done
-          echo "dirs=${dirs[@]}" >> "$GITHUB_OUTPUT"  # Передаем список директорий как выходную переменную
+          echo "dirs=${dirs[@]}" >> $GITHUB_ENV  # Передаем список директорий в файл окружения
 
   use-directories:
     needs: define-directories
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tf_path: ${{ fromJson(needs.define-directories.outputs.dirs) }}  # Используем переданные директории для матрицы
+        tf_path: ${{ fromJson(needs.define-directories.outputs.dirs | toJson) }}  # Используем toJson для корректного формата
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v3
