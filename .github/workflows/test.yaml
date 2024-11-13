@@ -1,0 +1,52 @@
+name: Share and Use Changed Directories
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.tf'
+
+jobs:
+  define-directories:
+    runs-on: ubuntu-latest
+    outputs:
+      dirs: ${{ steps.set-dirs.outputs.dirs }}
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensure full history for comparing commits
+
+      - name: Get changed directories
+        id: changed-files
+        uses: tj-actions/changed-files@v34
+        with:
+          dir_names: 'true'
+
+      - name: Format directories
+        id: set-dirs
+        run: |
+          dirs=()
+          for dir in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            dirs+=("./$dir")
+          done
+          echo "dirs=${dirs[@]}" >> "$GITHUB_OUTPUT"  # Передаем список директорий как выходную переменную
+
+  use-directories:
+    needs: define-directories
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tf_path: ${{ fromJson(needs.define-directories.outputs.dirs) }}  # Используем переданные директории для матрицы
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Run terraform plan for directories
+        uses: dflook/terraform-plan@v1
+        with:
+          path: ${{ matrix.tf_path }}  # Применяем директорию из матрицы
+          add_github_comment: "always-new"
