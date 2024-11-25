@@ -11,22 +11,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.5.0
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::123456789012:role/YourRole
-          aws-region: us-east-1
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Plan
-        run: terraform plan -var="resource_type=${{ github.event.client_payload.resource_type }}" -var="resource_name=${{ github.event.client_payload.resource_name }}"
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -var="resource_type=${{ github.event.client_payload.resource_type }}" -var="resource_name=${{ github.event.client_payload.resource_name }}"
+      - name: Debug Variables
+        run: |
+          echo "Received Variables from Jira:"
+          echo "Resource Type: ${{ github.event.client_payload.resource_type }}"
+          echo "Resource Name: ${{ github.event.client_payload.resource_name }}"
